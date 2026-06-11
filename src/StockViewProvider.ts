@@ -161,9 +161,25 @@ export class StockViewProvider implements vscode.WebviewViewProvider {
             const indices = await Promise.all(indexSymbols.map(async symbol => {
                 try {
                     const quote = await yahooFinance.quote(symbol);
+                    let priceStr = 'N/A';
+                    if (quote.regularMarketPrice !== undefined && quote.regularMarketPrice !== null) {
+                        const isIndex = quote.quoteType === 'INDEX' || symbol.startsWith('^');
+                        if (isIndex) {
+                            priceStr = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(quote.regularMarketPrice);
+                        } else {
+                            const currency = quote.currency || 'USD';
+                            const isNoDecimal = currency === 'KRW' || currency === 'JPY';
+                            priceStr = new Intl.NumberFormat('en-US', {
+                                style: 'currency',
+                                currency: currency,
+                                minimumFractionDigits: isNoDecimal ? 0 : 2,
+                                maximumFractionDigits: isNoDecimal ? 0 : 2
+                            }).format(quote.regularMarketPrice);
+                        }
+                    }
                     return {
                         symbol: quote.shortName || symbol,
-                        price: quote.regularMarketPrice?.toFixed(2) || 'N/A',
+                        price: priceStr,
                         changeStr: quote.regularMarketChangePercent?.toFixed(2) || '0.00',
                         change: quote.regularMarketChangePercent || 0
                     };
@@ -206,10 +222,27 @@ export class StockViewProvider implements vscode.WebviewViewProvider {
                         }
                     });
 
+                    let priceStr = 'N/A';
+                    if (quote.regularMarketPrice !== undefined && quote.regularMarketPrice !== null) {
+                        const isIndex = quote.quoteType === 'INDEX' || symbol.startsWith('^');
+                        if (isIndex) {
+                            priceStr = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(quote.regularMarketPrice);
+                        } else {
+                            const currency = quote.currency || 'USD';
+                            const isNoDecimal = currency === 'KRW' || currency === 'JPY';
+                            priceStr = new Intl.NumberFormat('en-US', {
+                                style: 'currency',
+                                currency: currency,
+                                minimumFractionDigits: isNoDecimal ? 0 : 2,
+                                maximumFractionDigits: isNoDecimal ? 0 : 2
+                            }).format(quote.regularMarketPrice);
+                        }
+                    }
+
                     return {
                         symbol: quote.symbol,
                         name: quote.shortName || quote.symbol,
-                        price: quote.regularMarketPrice?.toFixed(2) || 'N/A',
+                        price: priceStr,
                         change: quote.regularMarketChangePercent || 0,
                         changeStr: quote.regularMarketChangePercent?.toFixed(2) || '0.00',
                         sparkline,
