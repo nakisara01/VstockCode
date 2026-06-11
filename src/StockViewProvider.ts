@@ -30,6 +30,11 @@ export class StockViewProvider implements vscode.WebviewViewProvider {
     public static readonly viewType = 'vstockcode.stockView';
     private _view?: vscode.WebviewView;
     private _updateIntervalId?: NodeJS.Timeout;
+    
+    // Cache variables to instantly restore state
+    private _cachedResults: any = null;
+    private _cachedIndices: any = null;
+    private _cachedTimestamp: string = '';
 
     constructor(private readonly _extensionUri: vscode.Uri) {}
 
@@ -137,6 +142,16 @@ export class StockViewProvider implements vscode.WebviewViewProvider {
 
         const config = vscode.workspace.getConfiguration('vstockcode');
         const updateInterval = config.get<number>('updateInterval', 60);
+
+        // Instantly restore from cache if available
+        if (this._cachedResults && this._cachedIndices) {
+            this._view.webview.postMessage({ 
+                type: 'update', 
+                data: this._cachedResults, 
+                indices: this._cachedIndices,
+                timestamp: this._cachedTimestamp
+            });
+        }
 
         this.updatePrices(false);
         this._updateIntervalId = setInterval(() => this.updatePrices(false), updateInterval * 1000);
@@ -265,11 +280,16 @@ export class StockViewProvider implements vscode.WebviewViewProvider {
                 config.update('alerts', alerts.filter(a => !a._delete), vscode.ConfigurationTarget.Global);
             }
 
+            // Update cache
+            this._cachedResults = results;
+            this._cachedIndices = indices.filter(i => i);
+            this._cachedTimestamp = new Date().toLocaleTimeString();
+
             this._view.webview.postMessage({ 
                 type: 'update', 
-                data: results, 
-                indices: indices.filter(i => i),
-                timestamp: new Date().toLocaleTimeString()
+                data: this._cachedResults, 
+                indices: this._cachedIndices,
+                timestamp: this._cachedTimestamp
             });
             if (showNotification) {
                 showAutoClosingNotification('Stock prices refreshed');

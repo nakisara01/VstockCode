@@ -5,7 +5,11 @@ export function activate(context: vscode.ExtensionContext) {
     const provider = new StockViewProvider(context.extensionUri);
 
     context.subscriptions.push(
-        vscode.window.registerWebviewViewProvider(StockViewProvider.viewType, provider)
+        vscode.window.registerWebviewViewProvider(StockViewProvider.viewType, provider, {
+            webviewOptions: {
+                retainContextWhenHidden: true
+            }
+        })
     );
 
     context.subscriptions.push(vscode.commands.registerCommand('vstockcode.refresh', () => {
