@@ -3,7 +3,8 @@
   "displayName": "VStockCode",
   "publisher": "nakisara01",
   "description": "Terminal-style global stock monitor for VS Code (KOSPI, NASDAQ, S&P 500, etc.)",
-  "version": "1.0.0",
+  "version": "1.0.1",
+  "icon": "resources/VstockCode.png",
   "repository": {
     "type": "git",
     "url": "https://github.com/nakisara01/VstockCode.git"
