@@ -1,0 +1,113 @@
+{
+  "name": "vstockcode",
+  "displayName": "VStockCode",
+  "publisher": "nakisara01",
+  "description": "Terminal-style global stock monitor for VS Code (KOSPI, NASDAQ, S&P 500, etc.)",
+  "version": "1.0.0",
+  "icon": "VstockCode.png",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "panel": [
+        {
+          "id": "vstockcode-panel",
+          "title": "Stock Monitor",
+          "icon": "resources/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "vstockcode-panel": [
+        {
+          "type": "webview",
+          "id": "vstockcode.stockView",
+          "name": "Stocks"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "vstockcode.refresh",
+        "title": "Refresh Prices",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "vstockcode.addSymbol",
+        "title": "Add Stock Symbol",
+        "icon": "$(add)"
+      },
+      {
+        "command": "vstockcode.openFinance",
+        "title": "VStockCode: Open Finance Page"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "vstockcode.addSymbol",
+          "when": "view == vstockcode.stockView",
+          "group": "navigation"
+        },
+        {
+          "command": "vstockcode.refresh",
+          "when": "view == vstockcode.stockView",
+          "group": "navigation"
+        }
+      ]
+    },
+    "keybindings": [
+      {
+        "command": "vstockcode.openFinance",
+        "key": "cmd+enter",
+        "mac": "cmd+enter",
+        "when": "webviewId == 'vstockcode.stockView' || editorTextFocus"
+      }
+    ],
+    "configuration": {
+      "title": "VStockCode",
+      "properties": {
+        "vstockcode.symbols": {
+          "type": "array",
+          "default": [
+            "005930.KS"
+          ],
+          "description": "List of stock symbols to monitor (e.g. 005930.KS for Samsung Electronics)"
+        },
+        "vstockcode.updateInterval": {
+          "type": "number",
+          "default": 60,
+          "description": "Update interval in seconds"
+        },
+        "vstockcode.alerts": {
+          "type": "array",
+          "default": [],
+          "description": "List of price alerts (e.g. { symbol: 'AAPL', operator: '>', price: 150 })"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "esbuild ./src/extension.ts --bundle --outfile=out/extension.js --external:vscode --external:@std/* --external:@gadicc/* --format=cjs --platform=node",
+    "watch": "esbuild ./src/extension.ts --bundle --outfile=out/extension.js --external:vscode --external:@std/* --external:@gadicc/* --format=cjs --platform=node --watch",
+    "pretest": "npm run compile && npm run lint"
+  },
+  "devDependencies": {
+    "@types/node": "^18.x",
+    "@types/vscode": "^1.80.0",
+    "esbuild": "^0.28.0",
+    "typescript": "^5.1.3"
+  },
+  "dependencies": {
+    "yahoo-finance2": "^3.15.2"
+  }
+}
